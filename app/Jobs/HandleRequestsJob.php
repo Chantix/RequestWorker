@@ -6,8 +6,10 @@ namespace App\Jobs;
 use App\Console\Commands\HandleRequests;
 use App\Request;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\QueryException;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -47,15 +49,21 @@ class HandleRequestsJob implements ShouldQueue
 
         try {
             DB::beginTransaction();
-            $query->update(['status' => Request::STATUS_PROCESSING]);
 
             $requests = $query->get()->keyBy('url');
 
             $results = [];
             foreach ($requests as $request) {
                 $url = $request->url;
-                $statusCode = $this->httpClient->request('GET', $url)->getStatusCode();
-//                if ($statusCode != 200) dd($statusCode);
+                try {
+                    $statusCode = $this->httpClient->request('GET', $url, [
+                        'timeout' => 2,
+                    ])->getStatusCode();
+                } catch (ConnectException $exception) {
+                    $statusCode = 408;
+                } catch (\Exception $exception) {
+                    $statusCode = $exception->getCode();
+                }
                 $results[$url] = [
                     'id' => $requests[$url]['id'],
                     'url' => $url,
@@ -63,9 +71,8 @@ class HandleRequestsJob implements ShouldQueue
                     'http_code' => $statusCode
                 ];
             }
-
             Request::insertOnDuplicateKey($results);
-        } catch (\Exception $exception) {
+        } catch (QueryException $exception) {
             DB::rollBack();
             \Log::info(__CLASS__ . ':' . $exception->getMessage());
             return;
