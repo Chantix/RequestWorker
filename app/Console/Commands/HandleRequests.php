@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class HandleRequests extends Command
 {
-    const CHUNK_SIZE = 5;
+    const CHUNK_SIZE = 50;
     const QUEUE_NAME = 'default';
 
     /**
