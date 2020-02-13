@@ -41,12 +41,12 @@ class HandleRequestsJob implements ShouldQueue
     {
         $this->httpClient = new Client();
 
-        $query = Request::query()
+        $ids = Request::query()
             ->offset($this->offset)
-            ->limit(HandleRequests::CHUNK_SIZE);
+            ->limit(HandleRequests::CHUNK_SIZE)
+            ->where('status', '=', Request::STATUS_NEW)
+            ->pluck('id');
 
-
-        $ids = $query->where('status', '=', Request::STATUS_NEW)->pluck('id');
         Request::query()->whereIn('id', $ids)->update(['status' => Request::STATUS_PROCESSING]);
 
         try {
