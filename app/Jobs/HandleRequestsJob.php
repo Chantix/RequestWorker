@@ -42,7 +42,6 @@ class HandleRequestsJob implements ShouldQueue
         $this->httpClient = new Client();
 
         $ids = Request::query()
-            ->offset($this->offset)
             ->limit(HandleRequests::CHUNK_SIZE)
             ->where('status', '=', Request::STATUS_NEW)
             ->orderBy('id')
