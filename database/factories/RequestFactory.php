@@ -21,7 +21,7 @@ $factory->define(\App\Request::class, function (Faker $faker) {
     return [
         'id' => null,
         'url' => $faker->url,
-        'status' => $faker->randomElement([Request::STATUS_NEW, Request::STATUS_PROCESSING, Request::STATUS_ERROR, Request::STATUS_DONE]),
+        'status' => Request::STATUS_NEW,
         'http_code' => null
     ];
 });
