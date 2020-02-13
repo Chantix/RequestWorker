@@ -19,6 +19,8 @@ class HandleRequestsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    const REQUEST_TIMEOUT = 3;
+
     /**
      * @var int
      */
@@ -59,7 +61,7 @@ class HandleRequestsJob implements ShouldQueue
                 $url = $request->url;
                 try {
                     $statusCode = $this->httpClient->request('GET', $url, [
-                        'timeout' => 3,
+                        'timeout' => self::REQUEST_TIMEOUT,
                     ])->getStatusCode();
                 } catch (ConnectException $exception) {
                     $statusCode = 408;
