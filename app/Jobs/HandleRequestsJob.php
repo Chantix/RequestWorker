@@ -45,6 +45,7 @@ class HandleRequestsJob implements ShouldQueue
             ->offset($this->offset)
             ->limit(HandleRequests::CHUNK_SIZE)
             ->where('status', '=', Request::STATUS_NEW)
+            ->orderBy('id')
             ->pluck('id');
 
         Request::query()->whereIn('id', $ids)->update(['status' => Request::STATUS_PROCESSING]);
