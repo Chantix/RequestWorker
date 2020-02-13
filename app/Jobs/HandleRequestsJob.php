@@ -8,7 +8,6 @@ use App\Request;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Bus\Queueable;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -43,14 +42,17 @@ class HandleRequestsJob implements ShouldQueue
         $this->httpClient = new Client();
 
         $query = Request::query()
-            ->where('status', '=', Request::STATUS_NEW)
             ->offset($this->offset)
             ->limit(HandleRequests::CHUNK_SIZE);
+
+
+        $ids = $query->where('status', '=', Request::STATUS_NEW)->pluck('id');
+        Request::query()->whereIn('id', $ids)->update(['status' => Request::STATUS_PROCESSING]);
 
         try {
             DB::beginTransaction();
 
-            $requests = $query->get()->keyBy('url');
+            $requests = Request::query()->whereIn('id', $ids)->get()->keyBy('url');
 
             $results = [];
             foreach ($requests as $request) {
