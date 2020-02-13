@@ -57,7 +57,7 @@ class HandleRequestsJob implements ShouldQueue
                 $url = $request->url;
                 try {
                     $statusCode = $this->httpClient->request('GET', $url, [
-                        'timeout' => 2,
+                        'timeout' => 5,
                     ])->getStatusCode();
                 } catch (ConnectException $exception) {
                     $statusCode = 408;
