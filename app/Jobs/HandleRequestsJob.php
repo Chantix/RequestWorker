@@ -55,7 +55,7 @@ class HandleRequestsJob implements ShouldQueue
             foreach ($requests as $request) {
                 $url = $request->url;
                 $statusCode = $this->httpClient->request('GET', $url)->getStatusCode();
-                if ($statusCode != 200) dd($statusCode);
+//                if ($statusCode != 200) dd($statusCode);
                 $results[$url] = [
                     'id' => $requests[$url]['id'],
                     'url' => $url,
@@ -68,6 +68,7 @@ class HandleRequestsJob implements ShouldQueue
         } catch (\Exception $exception) {
             DB::rollBack();
             \Log::info(__CLASS__ . ':' . $exception->getMessage());
+            return;
         }
 
         DB::commit();
